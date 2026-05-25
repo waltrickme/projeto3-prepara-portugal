@@ -1,0 +1,19 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.Python
+
+# IDE
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
+
+# Jupyter (caso use no futuro)
+.ipynb_checkpoints/
+
+# Outputs sensíveis (vazio por padrão, mantemos rastreio)
+# data/raw/*.xlsx  # descomente se quiser excluir a base
