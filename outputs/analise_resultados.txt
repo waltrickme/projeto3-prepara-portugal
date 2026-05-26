@@ -1,0 +1,20 @@
+=== ANÁLISE EXPLORATÓRIA — PROJETO 3 PREPARA PORTUGAL ===
+
+1. E-mails inválidos (nulos ou formato incorreto): 1262 de 6016 (21.0%)
+   E-mails duplicados identificados: 123
+
+2. Top 5 cargos mais frequentes:
+   - Attorney: 264
+   - Compliance Analyst: 129
+   - Legal Counsel: 103
+   - Legal Analyst: 87
+   - Legal Assistant: 81
+
+3. Empresas únicas (após harmonização): 377
+
+4. Empresa mais recorrente: 'Paypal Do Brasil' com 1062 leads
+
+5. Leads por país (Brasil / México / Outros):
+   - Outros: 4049 (67.3%)
+   - Brasil: 1961 (32.6%)
+   - México: 6 (0.1%)
