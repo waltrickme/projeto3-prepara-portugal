@@ -100,10 +100,13 @@ def grafico4(df):
     por_area = df["area"].value_counts()
     colors = LOOKER_PIE[:len(por_area)]
     fig, ax = plt.subplots(figsize=(7, 7))
+    def autopct_hide_small(pct):
+        return f"{pct:.1f}%" if pct >= 4.0 else ""
+
     wedges, texts, autotexts = ax.pie(
         por_area.values,
         labels=None,
-        autopct="%1.1f%%",
+        autopct=autopct_hide_small,
         colors=colors,
         startangle=90,
         counterclock=False,
