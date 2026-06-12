@@ -103,14 +103,23 @@ def grafico4(df):
     fig, ax = plt.subplots(figsize=(7, 7))
     wedges, texts, autotexts = ax.pie(
         por_area.values,
-        labels=por_area.index,
+        labels=None,
         autopct="%1.1f%%",
         colors=colors,
-        startangle=140,
-        pctdistance=0.82,
+        startangle=90,
+        counterclock=False,
+        pctdistance=0.75,
     )
     for text in autotexts:
         text.set_fontsize(10)
+    ax.legend(
+        wedges,
+        por_area.index,
+        title="Área",
+        loc="center left",
+        bbox_to_anchor=(1, 0, 0.5, 1),
+        fontsize=10,
+    )
     ax.set_title("Distribuição por Área Profissional", fontsize=14, fontweight="bold", pad=15)
     plt.tight_layout()
     path = f"{GRAFICOS_DIR}/grafico4_areas.png"
