@@ -13,8 +13,13 @@ import seaborn as sns
 PROCESSED_PATH = "data/processed/leads_harmonizados.xlsx"
 GRAFICOS_DIR = "outputs/graficos"
 
-sns.set_theme(style="whitegrid", palette="Blues_r")
+sns.set_theme(style="whitegrid")
 plt.rcParams.update({"font.family": "sans-serif", "figure.dpi": 150})
+
+# Paleta idêntica ao Looker Studio (tema Google)
+LOOKER_BLUE  = "#4285F4"
+LOOKER_GREEN = "#34A853"
+LOOKER_PIE   = ["#4285F4", "#EA8600", "#9334E6", "#34A853", "#13B5C8", "#FBBC04"]
 
 AREA_MAP = {
     "Legal": ["attorney", "lawyer", "counsel", "legal", "paralegal", "law"],
@@ -38,12 +43,9 @@ def classify_area(cargo: str) -> str:
 def grafico1(df):
     top10 = df[df["cargo"] != "Desconhecido"]["cargo"].value_counts().head(10)
     fig, ax = plt.subplots(figsize=(10, 6))
-    bars = ax.barh(top10.index[::-1], top10.values[::-1], color=sns.color_palette("Blues_r", 10))
+    ax.barh(top10.index[::-1], top10.values[::-1], color=LOOKER_BLUE)
     ax.set_xlabel("Número de Leads")
     ax.set_title("Top 10 Cargos Mais Frequentes", fontsize=14, fontweight="bold", pad=15)
-    for bar, val in zip(bars, top10.values[::-1]):
-        ax.text(bar.get_width() + 2, bar.get_y() + bar.get_height() / 2,
-                str(val), va="center", fontsize=9)
     ax.xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
     plt.tight_layout()
     path = f"{GRAFICOS_DIR}/grafico1_cargos.png"
@@ -59,7 +61,7 @@ def grafico2(df):
         .head(10)
     )
     fig, ax = plt.subplots(figsize=(10, 6))
-    bars = ax.barh(top10.index[::-1], top10.values[::-1], color=sns.color_palette("Greens_r", 10))
+    bars = ax.barh(top10.index[::-1], top10.values[::-1], color=LOOKER_GREEN)
     ax.set_xlabel("Número de Leads")
     ax.set_title("Top 10 Empresas Mais Recorrentes", fontsize=14, fontweight="bold", pad=15)
     for bar, val in zip(bars, top10.values[::-1]):
@@ -75,12 +77,9 @@ def grafico2(df):
 
 def grafico3(df):
     """Gráfico 3 obrigatório: Brasil / México / Outros (conforme enunciado)."""
-    por_pais = df["pais_padronizado"].value_counts().reindex(
-        ["Brasil", "México", "Outros"], fill_value=0
-    )
-    colors = ["#1f77b4", "#ff7f0e", "#7f7f7f"]
+    por_pais = df["pais_padronizado"].value_counts()  # ordem decrescente: Outros, Brasil, México
     fig, ax = plt.subplots(figsize=(7, 5))
-    bars = ax.bar(por_pais.index, por_pais.values, color=colors, width=0.5)
+    bars = ax.bar(por_pais.index, por_pais.values, color=LOOKER_BLUE, width=0.5)
     ax.set_ylabel("Número de Leads")
     ax.set_title("Distribuição Geográfica dos Leads", fontsize=14, fontweight="bold", pad=15)
     for bar, val in zip(bars, por_pais.values):
@@ -99,7 +98,7 @@ def grafico4(df):
     df = df.copy()
     df["area"] = df["cargo"].apply(classify_area)
     por_area = df["area"].value_counts()
-    colors = sns.color_palette("Set2", len(por_area))
+    colors = LOOKER_PIE[:len(por_area)]
     fig, ax = plt.subplots(figsize=(7, 7))
     wedges, texts, autotexts = ax.pie(
         por_area.values,
