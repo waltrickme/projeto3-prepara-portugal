@@ -100,13 +100,14 @@ def grafico4(df):
     por_area = df["area"].value_counts()
     colors = LOOKER_PIE[:len(por_area)]
     fig, ax = plt.subplots(figsize=(7, 7))
-    def autopct_hide_small(pct):
+    def autopct_large_only(pct):
         return f"{pct:.1f}%" if pct >= 4.0 else ""
 
+    total = por_area.values.sum()
     wedges, texts, autotexts = ax.pie(
         por_area.values,
         labels=None,
-        autopct=autopct_hide_small,
+        autopct=autopct_large_only,
         colors=colors,
         startangle=90,
         counterclock=False,
@@ -114,9 +115,14 @@ def grafico4(df):
     )
     for text in autotexts:
         text.set_fontsize(10)
+    # Legenda com percentagem em todas as categorias (incluindo as pequenas)
+    legend_labels = [
+        f"{area}  {val/total*100:.1f}%"
+        for area, val in zip(por_area.index, por_area.values)
+    ]
     ax.legend(
         wedges,
-        por_area.index,
+        legend_labels,
         title="Área",
         loc="center left",
         bbox_to_anchor=(1, 0, 0.5, 1),
