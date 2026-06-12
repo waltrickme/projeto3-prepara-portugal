@@ -88,7 +88,7 @@ python scripts/03_visualizacoes.py
 - [x] Harmonização (5 tarefas obrigatórias)
 - [x] Análise exploratória (5 perguntas obrigatórias)
 - [x] Visualizações (4 gráficos obrigatórios)
-- [ ] Dashboard no Looker Studio *(opcional — não incluído)*
+- [x] Dashboard interativo no Looker Studio
 - [x] Documento final em PDF
 
 ---

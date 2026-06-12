@@ -88,7 +88,7 @@ def clean_company_name(name) -> str:
     if not isinstance(name, str):
         return "Desconhecido"
     cleaned = LEGAL_SUFFIXES.sub("", name)
-    cleaned = re.sub(r"[,.\-]+\s*$", "", cleaned.strip())
+    cleaned = re.sub(r"[\s,.\-/]+$", "", cleaned.strip())
     cleaned = re.sub(r"\s{2,}", " ", cleaned)
     cleaned = cleaned.replace("…", "").strip()
     return cleaned.title() if cleaned else "Desconhecido"

@@ -162,7 +162,7 @@ Resultado guardado na coluna `pais_padronizado`.
 
 Do total de 6.016 registos:
 - **1.262 e-mails inválidos ou nulos** — correspondem a **21,0%** da base.
-- **123 e-mails duplicados** — registos distintos que partilham o mesmo endereço.
+- **123 registos marcados como duplicados** — correspondem a **59 endereços de e-mail únicos** que aparecem mais de uma vez na base. O método `duplicated(keep=False)` marca todas as ocorrências de um e-mail repetido, não apenas as cópias excedentes. Numa operação de limpeza, seriam removidos 64 registos excedentes, ficando apenas um por e-mail.
 
 Esta dimensão de dados inválidos é relevante para qualquer ação de CRM, pois cerca de 1 em cada 5 leads não pode ser contactado por e-mail.
 
@@ -180,7 +180,7 @@ Os cinco cargos mais frequentes pertencem todos às áreas jurídica e de compli
 
 ### 6.3. Quantidade de Empresas Únicas
 
-Após harmonização dos nomes (remoção de sufixos jurídicos e normalização): **377 empresas únicas**.
+Após harmonização dos nomes (remoção de sufixos jurídicos e normalização): **377 valores únicos**, incluindo a categoria `Desconhecido` (69 registos sem empresa preenchida na base original). Excluindo `Desconhecido`, a base contém **376 empresas reais distintas**.
 
 ### 6.4. Empresa Mais Recorrente
 
@@ -226,7 +226,17 @@ Gráfico de pizza com agrupamento dos cargos em cinco grandes áreas profissiona
 
 ---
 
-## 8. Conclusões
+## 8. Dashboard Interativo — Looker Studio
+
+Como complemento às visualizações estáticas geradas pelo script Python, foi desenvolvido um dashboard interativo no **Google Looker Studio**, conectado à base harmonizada exportada em CSV.
+
+O dashboard replica os 4 gráficos obrigatórios em formato interativo, com filtros cruzados e atualização dinâmica dos dados. A construção do dashboard serviu também como **validação independente** dos resultados do pipeline Python: ao comparar os valores gerados pelo script com os valores calculados pelo Looker Studio a partir do mesmo ficheiro CSV, foi possível confirmar a consistência dos dados e detetar dois erros que estavam na implementação original (ver Secção 11).
+
+**Link do dashboard:** https://datastudio.google.com/s/knZFQiJOqAE
+
+---
+
+## 9. Conclusões
 
 A base analisada é uma base de leads B2B altamente especializada no setor de pagamentos e serviços financeiros, com foco claro em profissionais de áreas regulatórias — Compliance e Legal representam 80,8% dos registos classificáveis.
 
@@ -244,7 +254,7 @@ A base analisada é uma base de leads B2B altamente especializada no setor de pa
 
 ---
 
-## 9. Limitações do Estudo
+## 10. Limitações do Estudo
 
 - A inferência de país por domínio de e-mail é uma aproximação: domínios genéricos (`.com`, `.io`) não permitem identificar o país real do lead.
 - Os nomes de empresas com encoding corrompido (`CR…DITO`) não puderam ser reconstituídos automaticamente sem a fonte original.
@@ -253,17 +263,49 @@ A base analisada é uma base de leads B2B altamente especializada no setor de pa
 
 ---
 
-## 10. Anexos
+## 11. Registo de Erros Detetados e Corrigidos
 
-### 10.1. Repositório
+Durante o desenvolvimento do projeto, após validação cruzada entre o pipeline Python e o dashboard Looker Studio, foram identificados e corrigidos dois erros:
+
+### Erro 1 — Nome "Nu Financeira ." com ponto final residual
+
+**Onde:** `scripts/01_harmonizacao.py`, função `clean_company_name()`
+
+**Problema:** A expressão regular `\bS\.A\.?\b` utilizada para remover sufixos jurídicos apresentava um comportamento inesperado com word boundaries. Quando aplicada a nomes terminados em "S.A." no fim da string, o regex correspondia apenas a "S.A" (3 caracteres), deixando o ponto final "." isolado no nome da empresa. A limpeza subsequente `re.sub(r"[,.\-]+\s*$", ...)` não removia o espaço antes do ponto ("Nu Financeira ."), resultando em nomes com ponto residual no ficheiro de saída.
+
+**Por que aconteceu:** O quantificador `\.?` torna o último ponto opcional, mas o `\b` após o grupo exige uma word boundary. Após "." (não-palavra) no fim de string, não existe boundary → o regex preferia a correspondência mais curta "S.A" (com boundary após "A"), deixando "." por tratar. O regex de limpeza seguinte `[,.\-]+\s*$` não capturava o padrão " ." (espaço antes do ponto).
+
+**Correção aplicada:** Alterada a expressão de limpeza de `r"[,.\-]+\s*$"` para `r"[\s,.\-/]+$"`, que passa a capturar também espaços antes de pontuação terminal — eliminando o padrão " ." e qualquer combinação de espaços e pontuação no fim do nome.
+
+**Impacto:** O nome "Nu Financeira ." (353 leads) passou a ser corretamente harmonizado como "Nu Financeira". A contagem de empresas únicas não foi afetada.
+
+---
+
+### Erro 2 — Diferença de percentagens no gráfico de Áreas Profissionais (Looker vs Python)
+
+**Onde:** Campo calculado `area_profissional` no Looker Studio
+
+**Problema:** Após importar o CSV para o Looker Studio e criar o gráfico de pizza, os valores apresentavam diferenças em relação ao script Python: Legal aparecia com 33.7% (em vez de 34.9%) e Outros com 15% (em vez de 13.8%).
+
+**Por que aconteceu:** Duas keywords presentes no script Python estavam ausentes da fórmula CASE criada no Looker Studio:
+1. Keyword `"law"` na categoria Legal — títulos como "Law Partner" ou "Corporate Law" eram classificados como "Outros" no Looker por não conterem "lawyer", "attorney" ou "legal".
+2. Keyword `"it "` (com espaço) na categoria Technology — 24 registos com títulos "IT Governance Analyst", "Senior IT Governance", etc., eram classificados como "Outros" por não conterem "tech", "engineer" ou "developer".
+
+**Correção aplicada:** Fórmula CASE atualizada no Looker Studio com adição de `|law` no padrão Legal e `|it ` (com espaço) no padrão Technology. Após a correção, todos os valores Looker coincidem com os valores Python ao centésimo: Compliance 45.9%, Legal 34.9%, Outros 13.8%, Technology 2.9%, Finance 1.4%, Comercial 1.1%.
+
+---
+
+## 12. Anexos
+
+### 12.1. Repositório
 
 - **GitHub:** https://github.com/waltrickme/projeto3-prepara-portugal
 
-### 10.2. Stack e Dependências
+### 12.2. Stack e Dependências
 
 Ver ficheiro `requirements.txt` no repositório.
 
-### 10.3. Glossário Técnico
+### 12.3. Glossário Técnico
 
 | Termo | Definição |
 |-------|-----------|
